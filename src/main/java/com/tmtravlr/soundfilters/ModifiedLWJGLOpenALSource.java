@@ -16,7 +16,7 @@ import org.lwjgl.openal.AL10;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ReportedException;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.*;
 import paulscode.sound.FilenameURL;
 import paulscode.sound.SoundBuffer;
 import paulscode.sound.Source;
@@ -124,7 +124,7 @@ public class ModifiedLWJGLOpenALSource extends SourceLWJGLOpenAL {
 			Minecraft mc = Minecraft.getMinecraft();
 			boolean isMusic = this.toStream && this.position.x == 0.0F && this.position.y == 0.0F && this.position.z == 0.0F && this.attModel == 0;
 
-			if (!isMusic && mc != null && mc.world != null) {
+			if (!isMusic && mc != null && mc.theWorld != null) {
 				boolean isOccluded = false;
 				DoubleWithTimeout sourceInfo = new DoubleWithTimeout((Source) null, 0.0D, 10);
 
@@ -151,7 +151,7 @@ public class ModifiedLWJGLOpenALSource extends SourceLWJGLOpenAL {
 
 				if (isOccluded && this.attModel != 0) {
 					SoundFiltersMod.lowPassFilter.gain = (float) ((double) SoundFiltersMod.lowPassFilter.gain * (1.0D - 1.0D * sourceInfo.amount));
-					SoundFiltersMod.lowPassFilter.gainHF = (float) ((double) SoundFiltersMod.lowPassFilter.gainHF * (1.0D - 1.0D * (double) MathHelper.sqrt(sourceInfo.amount)));
+					SoundFiltersMod.lowPassFilter.gainHF = (float) ((double) SoundFiltersMod.lowPassFilter.gainHF * (1.0D - 1.0D * (double) Math.sqrt(sourceInfo.amount)));
 				}
 
 				if (SoundFiltersMod.lowPassFilter.gain >= 1.0F && SoundFiltersMod.lowPassFilter.gainHF >= 1.0F) {

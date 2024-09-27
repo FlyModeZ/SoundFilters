@@ -23,7 +23,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.math.*;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -78,17 +78,17 @@ public class SoundTickHandler {
 
 		// Return the int floor of x
 		public int x() {
-			return MathHelper.floor(x);
+			return (int) Math.floor(x);
 		}
 
 		// Return the int floor of y
 		public int y() {
-			return MathHelper.floor(y);
+			return (int) Math.floor(y);
 		}
 
 		// Return the int floor of z
 		public int z() {
-			return MathHelper.floor(z);
+			return (int) Math.floor(z);
 		}
 
 		public boolean equals(Object object) {
@@ -157,9 +157,9 @@ public class SoundTickHandler {
 	@SubscribeEvent
 	public void tick(TickEvent.ClientTickEvent event) {
 		if (event.phase == TickEvent.Phase.START) {
-			if (this.mc != null && this.mc.world != null && this.mc.player != null && !this.mc.isGamePaused()) {
+			if (this.mc != null && this.mc.theWorld != null && this.mc.thePlayer != null && !this.mc.isGamePaused()) {
 				// Handle the low-pass inside of liquids				
-				if (this.mc.player.isInsideOfMaterial(Material.WATER)) {
+				if (this.mc.thePlayer.isInsideOfMaterial(Material.water)) {
 					if (!waterSound) {
 						if (SoundFiltersMod.DEBUG) {
 							SoundFiltersMod.logger.debug("[SoundFilters] Applying water sound low pass.");
@@ -180,7 +180,7 @@ public class SoundTickHandler {
 					waterSound = false;
 				}
 
-				if (this.mc.player.isInsideOfMaterial(Material.LAVA)) {
+				if (this.mc.thePlayer.isInsideOfMaterial(Material.lava)) {
 					if (!lavaSound) {
 						if (SoundFiltersMod.DEBUG) {
 							SoundFiltersMod.logger.debug("[SoundFilters] Applying lava sound low pass.");
@@ -231,9 +231,9 @@ public class SoundTickHandler {
 							
 							// The source can sometimes be modified in another thread, causing a rare null pointer exception here. It seems to happen when a lot of mods are installed.
 							try {
-								if (this.mc != null && this.mc.world != null && this.mc.player != null) {
-									Vec3d roomSize = new Vec3d(this.mc.player.posX, this.mc.player.posY + (double) this.mc.player.getEyeHeight(), this.mc.player.posZ);
-										sourceAndAmount.amount = (sourceAndAmount.amount * 3 + SoundFiltersMod.occlusionPercent * getSoundOcclusion(this.mc.world, new Vec3d((double) sourceAndAmount.source.position.x, (double) sourceAndAmount.source.position.y, (double) sourceAndAmount.source.position.z), roomSize)) / 4.0;
+								if (this.mc != null && this.mc.theWorld != null && this.mc.thePlayer != null) {
+									Vec3 roomSize = new Vec3(this.mc.thePlayer.posX, this.mc.thePlayer.posY + (double) this.mc.thePlayer.getEyeHeight(), this.mc.thePlayer.posZ);
+										sourceAndAmount.amount = (sourceAndAmount.amount * 3 + SoundFiltersMod.occlusionPercent * getSoundOcclusion(this.mc.theWorld, new Vec3((double) sourceAndAmount.source.position.x, (double) sourceAndAmount.source.position.y, (double) sourceAndAmount.source.position.z), roomSize)) / 4.0;
 								} else {
 									sourceAndAmount.amount = 0.0D;
 								}
@@ -256,7 +256,7 @@ public class SoundTickHandler {
 			}
 
 			// Create a profile of the reverb in the area.
-			if (this.mc != null && this.mc.world != null && this.mc.player != null && SoundFiltersMod.doReverb) {
+			if (this.mc != null && this.mc.theWorld != null && this.mc.thePlayer != null && SoundFiltersMod.doReverb) {
 				--profileTickCountdown;
 
 				// Only run every 13 ticks.
@@ -268,7 +268,7 @@ public class SoundTickHandler {
 					ArrayList<IBlockState> blocksFound = new ArrayList<IBlockState>();
 
 					LinkedList<ComparablePosition> toVisit = new LinkedList<ComparablePosition>();
-					toVisit.add(new ComparablePosition(MathHelper.floor(this.mc.player.posX), MathHelper.floor(this.mc.player.posY), MathHelper.floor(this.mc.player.posZ)));
+					toVisit.add(new ComparablePosition((int) Math.floor(this.mc.thePlayer.posX), (int) Math.floor(this.mc.thePlayer.posY), (int) Math.floor(this.mc.thePlayer.posZ)));
 					Block block;
 					IBlockState state;
 
@@ -285,16 +285,16 @@ public class SoundTickHandler {
 
 						// South
 						ComparablePosition pos = new ComparablePosition(current.x, current.y, current.z + 1);
-						state = this.mc.world.getBlockState(new BlockPos(pos.x(), pos.y(), pos.z()));
+						state = this.mc.theWorld.getBlockState(new BlockPos(pos.x(), pos.y(), pos.z()));
 						block = state.getBlock();
-						Material material = state.getMaterial();
+						Material material = block.getMaterial();
 
 						if (!material.blocksMovement()) {
 							if (!visited.contains(pos) && !toVisit.contains(pos)) {
 								toVisit.add(pos);
 							}
 
-							if (material != Material.AIR) {
+							if (material != Material.air) {
 								blocksFound.add(state);
 							}
 						} else {
@@ -303,16 +303,16 @@ public class SoundTickHandler {
 
 						// North
 						pos = new ComparablePosition(current.x, current.y, current.z - 1);
-						state = this.mc.world.getBlockState(new BlockPos(pos.x(), pos.y(), pos.z()));
+						state = this.mc.theWorld.getBlockState(new BlockPos(pos.x(), pos.y(), pos.z()));
 						block = state.getBlock();
-						material = state.getMaterial();
+						material = block.getMaterial();
 
 						if (!material.blocksMovement()) {
 							if (!visited.contains(pos) && !toVisit.contains(pos)) {
 								toVisit.add(pos);
 							}
 
-							if (material != Material.AIR) {
+							if (material != Material.air) {
 								blocksFound.add(state);
 							}
 						} else {
@@ -321,16 +321,16 @@ public class SoundTickHandler {
 
 						// Up
 						pos = new ComparablePosition(current.x, current.y + 1, current.z);
-						state = this.mc.world.getBlockState(new BlockPos(pos.x(), pos.y(), pos.z()));
+						state = this.mc.theWorld.getBlockState(new BlockPos(pos.x(), pos.y(), pos.z()));
 						block = state.getBlock();
-						material = state.getMaterial();
+						material = block.getMaterial();
 
 						if (!material.blocksMovement()) {
 							if (!visited.contains(pos) && !toVisit.contains(pos)) {
 								toVisit.add(pos);
 							}
 
-							if (material != Material.AIR) {
+							if (material != Material.air) {
 								blocksFound.add(state);
 							}
 						} else {
@@ -339,16 +339,16 @@ public class SoundTickHandler {
 
 						// Down
 						pos = new ComparablePosition(current.x, current.y - 1, current.z);
-						state = this.mc.world.getBlockState(new BlockPos(pos.x(), pos.y(), pos.z()));
+						state = this.mc.theWorld.getBlockState(new BlockPos(pos.x(), pos.y(), pos.z()));
 						block = state.getBlock();
-						material = state.getMaterial();
+						material = block.getMaterial();
 
 						if (!material.blocksMovement()) {
 							if (!visited.contains(pos) && !toVisit.contains(pos)) {
 								toVisit.add(pos);
 							}
 
-							if (material != Material.AIR) {
+							if (material != Material.air) {
 								blocksFound.add(state);
 							}
 						} else {
@@ -357,16 +357,16 @@ public class SoundTickHandler {
 
 						// East
 						pos = new ComparablePosition(current.x + 1, current.y, current.z);
-						state = this.mc.world.getBlockState(new BlockPos(pos.x(), pos.y(), pos.z()));
+						state = this.mc.theWorld.getBlockState(new BlockPos(pos.x(), pos.y(), pos.z()));
 						block = state.getBlock();
-						material = state.getMaterial();
+						material = block.getMaterial();
 
 						if (!material.blocksMovement()) {
 							if (!visited.contains(pos) && !toVisit.contains(pos)) {
 								toVisit.add(pos);
 							}
 
-							if (material != Material.AIR) {
+							if (material != Material.air) {
 								blocksFound.add(state);
 							}
 						} else {
@@ -375,16 +375,16 @@ public class SoundTickHandler {
 
 						// West
 						pos = new ComparablePosition(current.x - 1, current.y, current.z);
-						state = this.mc.world.getBlockState(new BlockPos(pos.x(), pos.y(), pos.z()));
+						state = this.mc.theWorld.getBlockState(new BlockPos(pos.x(), pos.y(), pos.z()));
 						block = state.getBlock();
-						material = state.getMaterial();
+						material = block.getMaterial();
 
 						if (!material.blocksMovement()) {
 							if (!visited.contains(pos) && !toVisit.contains(pos)) {
 								toVisit.add(pos);
 							}
 
-							if (material != Material.AIR) {
+							if (material != Material.air) {
 								blocksFound.add(state);
 							}
 						} else {
@@ -417,11 +417,11 @@ public class SoundTickHandler {
 							lowReverb += factor >= 1.0 || factor < 0.0 ? 0.0 : 1.0 - factor;
 							midReverb += factor >= 2.0 || factor <= 0.0 ? 0.0 : 1.0 - Math.abs(factor - 1.0);
 							highReverb += factor <= 1.0 ? 0.0 : factor > 2.0 ? 1.0 : factor - 1.0;
-						} else if (s.getMaterial() != Material.ROCK && s.getMaterial() != Material.GLASS && s.getMaterial() != Material.ICE && s.getMaterial() != Material.IRON) {
-							if (s.getMaterial() != Material.CACTUS && s.getMaterial() != Material.CAKE && s.getMaterial() != Material.CLOTH && s.getMaterial() != Material.CORAL
-									&& s.getMaterial() != Material.GRASS && s.getMaterial() != Material.LEAVES && s.getMaterial() != Material.CARPET && s.getMaterial() != Material.PLANTS
-									&& s.getMaterial() != Material.GOURD && s.getMaterial() != Material.SNOW && s.getMaterial() != Material.SPONGE && s.getMaterial() != Material.VINE
-									&& s.getMaterial() != Material.WEB) {
+						} else if (b.getMaterial() != Material.rock && b.getMaterial() != Material.glass && b.getMaterial() != Material.ice && b.getMaterial() != Material.iron) {
+							if (b.getMaterial() != Material.cactus && b.getMaterial() != Material.cake && b.getMaterial() != Material.cloth && b.getMaterial() != Material.coral
+									&& b.getMaterial() != Material.grass && b.getMaterial() != Material.leaves && b.getMaterial() != Material.carpet && b.getMaterial() != Material.plants
+									&& b.getMaterial() != Material.gourd && b.getMaterial() != Material.snow && b.getMaterial() != Material.sponge && b.getMaterial() != Material.vine
+									&& b.getMaterial() != Material.web) {
 								// Generic materials that don't fall into either
 								// catagory (wood, dirt, etc.)
 								++midReverb;
@@ -455,43 +455,43 @@ public class SoundTickHandler {
 						 * 5 for the B's
 						 */
 
-						int x = MathHelper.floor(mc.player.posX);
-						int y = MathHelper.floor(mc.player.posY);
-						int z = MathHelper.floor(mc.player.posZ);
+						int x = (int) Math.floor(mc.thePlayer.posX);
+						int y = (int) Math.floor(mc.thePlayer.posY);
+						int z = (int) Math.floor(mc.thePlayer.posZ);
 
-						if (onlySkyAboveBlock(mc.world, x, y, z))
+						if (onlySkyAboveBlock(mc.theWorld, x, y, z))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x + rand.nextInt(5) + 5, y, z))
+						if (onlySkyAboveBlock(mc.theWorld, x + rand.nextInt(5) + 5, y, z))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x - rand.nextInt(5) - 5, y, z))
+						if (onlySkyAboveBlock(mc.theWorld, x - rand.nextInt(5) - 5, y, z))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x, y, z + rand.nextInt(5) + 5))
+						if (onlySkyAboveBlock(mc.theWorld, x, y, z + rand.nextInt(5) + 5))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x, y, z - rand.nextInt(5) - 5))
+						if (onlySkyAboveBlock(mc.theWorld, x, y, z - rand.nextInt(5) - 5))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x + rand.nextInt(5) + 5, y, z + rand.nextInt(5) + 5))
+						if (onlySkyAboveBlock(mc.theWorld, x + rand.nextInt(5) + 5, y, z + rand.nextInt(5) + 5))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x - rand.nextInt(5) - 5, y, z + rand.nextInt(5) + 5))
+						if (onlySkyAboveBlock(mc.theWorld, x - rand.nextInt(5) - 5, y, z + rand.nextInt(5) + 5))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x + rand.nextInt(5) + 5, y, z - rand.nextInt(5) - 5))
+						if (onlySkyAboveBlock(mc.theWorld, x + rand.nextInt(5) + 5, y, z - rand.nextInt(5) - 5))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x - rand.nextInt(5) - 5, y, z - rand.nextInt(5) - 5))
+						if (onlySkyAboveBlock(mc.theWorld, x - rand.nextInt(5) - 5, y, z - rand.nextInt(5) - 5))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x + rand.nextInt(5) + 5, y + 5, z))
+						if (onlySkyAboveBlock(mc.theWorld, x + rand.nextInt(5) + 5, y + 5, z))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x - rand.nextInt(5) - 5, y + 5, z))
+						if (onlySkyAboveBlock(mc.theWorld, x - rand.nextInt(5) - 5, y + 5, z))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x, y + 5, z + rand.nextInt(5) + 5))
+						if (onlySkyAboveBlock(mc.theWorld, x, y + 5, z + rand.nextInt(5) + 5))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x, y + 5, z - rand.nextInt(5) - 5))
+						if (onlySkyAboveBlock(mc.theWorld, x, y + 5, z - rand.nextInt(5) - 5))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x + rand.nextInt(5) + 5, y + 5, z + rand.nextInt(5) + 5))
+						if (onlySkyAboveBlock(mc.theWorld, x + rand.nextInt(5) + 5, y + 5, z + rand.nextInt(5) + 5))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x - rand.nextInt(5) - 5, y + 5, z + rand.nextInt(5) + 5))
+						if (onlySkyAboveBlock(mc.theWorld, x - rand.nextInt(5) - 5, y + 5, z + rand.nextInt(5) + 5))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x + rand.nextInt(5) + 5, y + 5, z - rand.nextInt(5) - 5))
+						if (onlySkyAboveBlock(mc.theWorld, x + rand.nextInt(5) + 5, y + 5, z - rand.nextInt(5) - 5))
 							skyFactor++;
-						if (onlySkyAboveBlock(mc.world, x - rand.nextInt(5) - 5, y + 5, z - rand.nextInt(5) - 5))
+						if (onlySkyAboveBlock(mc.theWorld, x - rand.nextInt(5) - 5, y + 5, z - rand.nextInt(5) - 5))
 							skyFactor++;
 					}
 
@@ -545,7 +545,7 @@ public class SoundTickHandler {
 			IBlockState state = world.getBlockState(new BlockPos(x, i, z));
 			Block block = state.getBlock();
 
-			if (state.getMaterial().blocksMovement()) {
+			if (block.getMaterial().blocksMovement()) {
 				return false;
 			}
 		}
@@ -568,24 +568,24 @@ public class SoundTickHandler {
 	 * @return A double representing the amount of occlusion to apply to the
 	 *         sound
 	 */
-	public static double getSoundOcclusion(World world, Vec3d sound, Vec3d listener) {
+	public static double getSoundOcclusion(World world, Vec3 sound, Vec3 listener) {
 		double occludedPercent = 0.0D;
 
 		// Fixes some funky things
 		sound = sound.addVector(0.1, 0.1, 0.1);
 
-		if (!Double.isNaN(sound.x) && !Double.isNaN(sound.y) && !Double.isNaN(sound.z)) {
-			if (!Double.isNaN(listener.x) && !Double.isNaN(listener.y) && !Double.isNaN(listener.z)) {
-				int listenerX = MathHelper.floor(listener.x);
-				int listenerY = MathHelper.floor(listener.y);
-				int listenerZ = MathHelper.floor(listener.z);
-				int soundX = MathHelper.floor(sound.x);
-				int soundY = MathHelper.floor(sound.y);
-				int soundZ = MathHelper.floor(sound.z);
+		if (!Double.isNaN(sound.xCoord) && !Double.isNaN(sound.yCoord) && !Double.isNaN(sound.zCoord)) {
+			if (!Double.isNaN(listener.xCoord) && !Double.isNaN(listener.yCoord) && !Double.isNaN(listener.zCoord)) {
+				int listenerX = (int) Math.floor(listener.xCoord);
+				int listenerY = (int) Math.floor(listener.yCoord);
+				int listenerZ = (int) Math.floor(listener.zCoord);
+				int soundX = (int) Math.floor(sound.xCoord);
+				int soundY = (int) Math.floor(sound.yCoord);
+				int soundZ = (int) Math.floor(sound.zCoord);
 				int countDown = 200;
 
 				while (countDown-- >= 0) {
-					if (Double.isNaN(sound.x) || Double.isNaN(sound.y) || Double.isNaN(sound.z)) {
+					if (Double.isNaN(sound.xCoord) || Double.isNaN(sound.yCoord) || Double.isNaN(sound.zCoord)) {
 						return occludedPercent;
 					}
 
@@ -627,20 +627,20 @@ public class SoundTickHandler {
 					double xPercentChange = 999.0D;
 					double yPercentChange = 999.0D;
 					double zPercentChange = 999.0D;
-					double xDifference = listener.x - sound.x;
-					double yDifference = listener.y - sound.y;
-					double zDifference = listener.z - sound.z;
+					double xDifference = listener.xCoord - sound.xCoord;
+					double yDifference = listener.yCoord - sound.yCoord;
+					double zDifference = listener.zCoord - sound.zCoord;
 
 					if (shouldChangeX) {
-						xPercentChange = (newX - sound.x) / xDifference;
+						xPercentChange = (newX - sound.xCoord) / xDifference;
 					}
 
 					if (shouldChangeY) {
-						yPercentChange = (newY - sound.y) / yDifference;
+						yPercentChange = (newY - sound.yCoord) / yDifference;
 					}
 
 					if (shouldChangeZ) {
-						zPercentChange = (newZ - sound.z) / zDifference;
+						zPercentChange = (newZ - sound.zCoord) / zDifference;
 					}
 
 					byte whichToChange;
@@ -652,7 +652,7 @@ public class SoundTickHandler {
 							whichToChange = 5;
 						}
 
-						sound = new Vec3d(newX, sound.y + yDifference * xPercentChange, sound.z + zDifference * xPercentChange);
+						sound = new Vec3(newX, sound.yCoord + yDifference * xPercentChange, sound.zCoord + zDifference * xPercentChange);
 					} else if (yPercentChange < zPercentChange) {
 						if (listenerY > soundY) {
 							whichToChange = 0;
@@ -660,7 +660,7 @@ public class SoundTickHandler {
 							whichToChange = 1;
 						}
 
-						sound = new Vec3d(sound.x + xDifference * yPercentChange, newY, sound.z + zDifference * yPercentChange);
+						sound = new Vec3(sound.xCoord + xDifference * yPercentChange, newY, sound.zCoord + zDifference * yPercentChange);
 					} else {
 						if (listenerZ > soundZ) {
 							whichToChange = 2;
@@ -668,25 +668,25 @@ public class SoundTickHandler {
 							whichToChange = 3;
 						}
 
-						sound = new Vec3d(sound.x + xDifference * zPercentChange, sound.y + yDifference * zPercentChange, newZ);
+						sound = new Vec3(sound.xCoord + xDifference * zPercentChange, sound.yCoord + yDifference * zPercentChange, newZ);
 					}
 
-					Vec3d vec32 = new Vec3d(MathHelper.floor(sound.x), MathHelper.floor(sound.y), MathHelper.floor(sound.z));
-					soundX = (int) vec32.x;
+					Vec3 vec32 = new Vec3((int) Math.floor(sound.xCoord), Math.floor(sound.yCoord), Math.floor(sound.zCoord));
+					soundX = (int) vec32.xCoord;
 
 					if (whichToChange == 5) {
 						--soundX;
 						vec32 = vec32.addVector(1.0, 0.0, 0.0);
 					}
 
-					soundY = (int) vec32.y;
+					soundY = (int) vec32.yCoord;
 
 					if (whichToChange == 1) {
 						--soundY;
 						vec32 = vec32.addVector(0.0, 1.0, 0.0);
 					}
 
-					soundZ = (int) vec32.z;
+					soundZ = (int) vec32.zCoord;
 
 					if (whichToChange == 3) {
 						--soundZ;
@@ -695,12 +695,15 @@ public class SoundTickHandler {
 
 					BlockPos pos = new BlockPos(soundX, soundY, soundZ);
 					IBlockState state = world.getBlockState(pos);
-					Block block = world.getBlockState(pos).getBlock();
+					Block block = state.getBlock();
 					int meta = block.getMetaFromState(state);
-					Material material = state.getMaterial();
+					Material material = block.getMaterial();
+					
+					BlockPos pos2 = new BlockPos(soundX, soundY, soundZ);
+					IBlockState state2 = world.getBlockState(pos2);
 
-					if (block != null && block != Blocks.AIR && state.getBoundingBox(world, new BlockPos(soundX, soundY, soundZ)) != Block.NULL_AABB && block.canCollideCheck(state, false)) {
-						RayTraceResult rayTrace = state.collisionRayTrace(world, pos, sound, listener);
+					if (block != null && block != Blocks.air && block.getCollisionBoundingBox(world, pos2, state2) != null && block.canCollideCheck(state, false)) {
+						MovingObjectPosition rayTrace = block.collisionRayTrace(world, pos, sound, listener);
 
 						if (rayTrace != null) {
 							// Check for custom occlusion blocks
